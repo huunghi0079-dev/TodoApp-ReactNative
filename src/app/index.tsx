@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -11,11 +12,49 @@ import {
 export default function HomeScreen() {
   const [task, setTask] = useState('');
   const [tasks, setTasks] = useState<string[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    loadTasks();
+  }, []);
+
+  useEffect(() => {
+    saveTasks();
+  }, [tasks]);
+
+  const saveTasks = async () => {
+    try {
+      await AsyncStorage.setItem('tasks', JSON.stringify(tasks));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const loadTasks = async () => {
+    try {
+      const data = await AsyncStorage.getItem('tasks');
+
+      if (data) {
+        setTasks(JSON.parse(data));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const addTask = () => {
     if (task.trim() === '') return;
 
-    setTasks([...tasks, task]);
+    if (editingIndex !== null) {
+      const updatedTasks = [...tasks];
+      updatedTasks[editingIndex] = task;
+
+      setTasks(updatedTasks);
+      setEditingIndex(null);
+    } else {
+      setTasks([...tasks, task]);
+    }
+
     setTask('');
   };
 
@@ -23,6 +62,11 @@ export default function HomeScreen() {
     const newTasks = [...tasks];
     newTasks.splice(index, 1);
     setTasks(newTasks);
+  };
+
+  const editTask = (index: number) => {
+    setTask(tasks[index]);
+    setEditingIndex(index);
   };
 
   return (
@@ -41,7 +85,9 @@ export default function HomeScreen() {
         onPress={addTask}
       >
         <Text style={styles.buttonText}>
-          Thêm Công Việc
+          {editingIndex !== null
+            ? 'Cập Nhật Công Việc'
+            : 'Thêm Công Việc'}
         </Text>
       </TouchableOpacity>
 
@@ -52,13 +98,23 @@ export default function HomeScreen() {
           <View style={styles.taskItem}>
             <Text>{item}</Text>
 
-            <TouchableOpacity
-              onPress={() => deleteTask(index)}
-            >
-              <Text style={styles.delete}>
-                Xóa
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                onPress={() => editTask(index)}
+              >
+                <Text style={styles.edit}>
+                  Sửa
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => deleteTask(index)}
+              >
+                <Text style={styles.delete}>
+                  Xóa
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       />
@@ -104,11 +160,22 @@ const styles = StyleSheet.create({
   taskItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 12,
     borderWidth: 1,
     borderColor: '#ddd',
     marginBottom: 10,
     borderRadius: 10,
+  },
+
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 15,
+  },
+
+  edit: {
+    color: 'blue',
+    fontWeight: 'bold',
   },
 
   delete: {
