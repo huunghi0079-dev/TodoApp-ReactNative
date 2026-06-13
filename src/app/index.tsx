@@ -13,10 +13,10 @@ export default function HomeScreen() {
   const [task, setTask] = useState('');
   const [tasks, setTasks] = useState<string[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [apiTasks, setApiTasks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    loadTasks();
-  }, []);
+  useEffect(() => {  loadTasks(); }, []);
 
   useEffect(() => {
     saveTasks();
@@ -32,14 +32,31 @@ export default function HomeScreen() {
 
   const loadTasks = async () => {
     try {
-      const data = await AsyncStorage.getItem('tasks');
-
-      if (data) {
-        setTasks(JSON.parse(data));
+      const savedTasks = await AsyncStorage.getItem('tasks');
+      if (savedTasks) {
+        setTasks(JSON.parse(savedTasks));
       }
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+
+    const response = await fetch(
+      'https://jsonplaceholder.typicode.com/todos?_limit=5'
+    );
+
+    const data = await response.json();
+
+    setApiTasks(data);
+  } catch (error) {
+    console.log(error);
+  } finally {
+    setLoading(false);
+  }
   };
 
   const addTask = () => {
@@ -91,6 +108,14 @@ export default function HomeScreen() {
         </Text>
       </TouchableOpacity>
 
+      <TouchableOpacity
+       style={styles.apiButton}
+      onPress={fetchTasks}>
+       <Text style={styles.buttonText}>
+       Tải Dữ Liệu API
+       </Text>
+       </TouchableOpacity>
+
       <FlatList
         data={tasks}
         keyExtractor={(item, index) => index.toString()}
@@ -118,6 +143,24 @@ export default function HomeScreen() {
           </View>
         )}
       />
+      <Text style={styles.apiTitle}>
+       Dữ liệu từ API
+      </Text>
+
+      {loading ? (
+      <Text>Đang tải...</Text>
+      ) : (
+      apiTasks.map(item => (
+      <View
+      key={item.id}
+      style={styles.apiItem}
+       >
+      <Text>
+       Công việc #{item.id}
+     </Text>
+       </View>
+       ))
+      )}
     </View>
   );
 }
@@ -146,6 +189,13 @@ const styles = StyleSheet.create({
 
   addButton: {
     backgroundColor: '#2196F3',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+
+  apiButton: {
+    backgroundColor: '#4CAF50',
     padding: 12,
     borderRadius: 10,
     marginBottom: 20,
@@ -182,4 +232,19 @@ const styles = StyleSheet.create({
     color: 'red',
     fontWeight: 'bold',
   },
+
+apiTitle: {
+  fontSize: 20,
+  fontWeight: 'bold',
+  marginTop: 20,
+  marginBottom: 10,
+},
+
+apiItem: {
+  backgroundColor: '#f2f2f2',
+  padding: 10,
+  borderRadius: 10,
+  marginBottom: 8,
+},
 });
+

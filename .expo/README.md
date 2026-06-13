@@ -1,14 +1,24 @@
-> Why do I have a folder named ".expo" in my project?
+# Todo App React Native
 
-The ".expo" folder is created when an Expo project is started using "expo start" command.
+## Giới thiệu
 
-> What do the files contain?
+Ứng dụng Todo App được xây dựng bằng React Native và Expo.
 
-- "devices.json": contains information about devices that have recently opened this project. This is used to populate the "Development sessions" list in your development builds.
-- "settings.json": contains the server configuration that is used to serve the application manifest.
-- "dev/logs/": contains structured JSONL event logs from CLI commands (e.g. start.log, export.log). These are truncated on each run.
+## Chức năng
 
-> Should I commit the ".expo" folder?
+* Thêm công việc
+* Sửa công việc
+* Xóa công việc
+* Lưu dữ liệu bằng AsyncStorage
+* Lấy dữ liệu từ API
+* Hiển thị danh sách công việc
 
-No, you should not share the ".expo" folder. It does not contain any information that is relevant for other developers working on the project, it is specific to your machine.
-Upon project creation, the ".expo" folder is already added to your ".gitignore" file.
+## Công nghệ sử dụng
+
+* React Native
+* Expo
+* TypeScript
+* AsyncStorage
+* Fetch API
+
+
